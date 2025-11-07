@@ -73,6 +73,11 @@ class RainbowWindowManager {
                 transition: background 0.2s;
             }
 
+            .window-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
             .window-btn:hover {
                 background: rgba(255,255,255,0.3);
             }
@@ -248,15 +253,22 @@ class RainbowWindowManager {
         windowElement.style.top = `${config.y}px`;
         windowElement.style.zIndex = this.zIndex++;
 
+        // 定义按钮SVG
+        const minimizeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M64 480C64 462.3 78.3 448 96 448L544 448C561.7 448 576 462.3 576 480C576 497.7 561.7 512 544 512L96 512C78.3 512 64 497.7 64 480z"/></svg>`;
+        const maximizeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M48 224l0 160c0 8.8 7.2 16 16 16l384 0c8.8 0 16-7.2 16-16l0-160-416 0zM0 128C0 92.7 28.7 64 64 64l384 0c35.3 0 64 28.7 64 64l0 256c0 35.3-28.7 64-64 64L64 448c-35.3 0-64-28.7-64-64L0 128z"/></svg>`;
+        const restoreSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M512 80L224 80c-8.8 0-16 7.2-16 16l0 16-48 0 0-16c0-35.3 28.7-64 64-64l288 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64l-48 0 0-48 48 0c8.8 0 16-7.2 16-16l0-192c0-8.8-7.2-16-16-16zM368 288l-320 0 0 128c0 8.8 7.2 16 16 16l288 0c8.8 0 16-7.2 16-16l0-128zM64 160l288 0c35.3 0 64 28.7 64 64l0 192c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 224c0-35.3 28.7-64 64-64z"/></svg>`;
+        const closeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M183.1 137.4C170.6 124.9 150.3 124.9 137.8 137.4C125.3 149.9 125.3 170.2 137.8 182.7L275.2 320L137.9 457.4C125.4 469.9 125.4 490.2 137.9 502.7C150.4 515.2 170.7 515.2 183.2 502.7L320.5 365.3L457.9 502.6C470.4 515.1 490.7 515.1 503.2 502.6C515.7 490.1 515.7 469.8 503.2 457.3L365.8 320L503.1 182.6C515.6 170.1 515.6 149.8 503.1 137.3C490.6 124.8 470.3 124.8 457.8 137.3L320.5 274.7L183.1 137.4z"/></svg>`;
+        const minimizedSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M352 128C352 110.3 337.7 96 320 96C302.3 96 288 110.3 288 128L288 288L128 288C110.3 288 96 302.3 96 320C96 337.7 110.3 352 128 352L288 352L288 512C288 529.7 302.3 544 320 544C337.7 544 352 529.7 352 512L352 352L512 352C529.7 352 544 337.7 544 320C544 302.3 529.7 288 512 288L352 288L352 128z"/></svg>`;
+
         // 构建窗口按钮
         const buttonsHTML = [];
         if (config.allowMinimize) {
-            buttonsHTML.push('<button class="window-btn minimize" title="最小化">-</button>');
+            buttonsHTML.push(`<button class="window-btn minimize" title="最小化">${minimizeSvg}</button>`);
         }
         if (config.allowMaximize) {
-            buttonsHTML.push('<button class="window-btn maximize" title="最大化">□</button>');
+            buttonsHTML.push(`<button class="window-btn maximize" title="最大化">${maximizeSvg}</button>`);
         }
-        buttonsHTML.push('<button class="window-btn close" title="关闭">×</button>');
+        buttonsHTML.push(`<button class="window-btn close" title="关闭">${closeSvg}</button>`);
 
         windowElement.innerHTML = `
             <div class="window-titlebar" style="background-color: ${config.titleBarColor}">
@@ -286,6 +298,13 @@ class RainbowWindowManager {
                 height: config.height,
                 x: config.x,
                 y: config.y
+            },
+            // 存储SVG以便切换状态
+            svgs: {
+                minimize: minimizeSvg,
+                minimized: minimizedSvg,
+                maximize: maximizeSvg,
+                restore: restoreSvg
             }
         };
 
@@ -346,7 +365,7 @@ class RainbowWindowManager {
      * @param {Object} windowInstance - 窗口实例
      */
     setupWindowEvents(windowInstance) {
-        const { element, config } = windowInstance;
+        const { element, config, svgs } = windowInstance;
         const titlebar = element.querySelector('.window-titlebar');
         const closeBtn = element.querySelector('.window-btn.close');
         const maximizeBtn = element.querySelector('.window-btn.maximize');
@@ -410,7 +429,8 @@ class RainbowWindowManager {
                     element.style.height = `${windowInstance.originalSize.height}px`;
                     element.style.left = `${windowInstance.originalSize.x}px`;
                     element.style.top = `${windowInstance.originalSize.y}px`;
-                    maximizeBtn.textContent = '□';
+                    maximizeBtn.innerHTML = svgs.maximize;
+                    maximizeBtn.title = "最大化";
                     windowInstance.isMaximized = false;
                 } else {
                     windowInstance.originalSize.width = element.offsetWidth;
@@ -422,7 +442,8 @@ class RainbowWindowManager {
                     element.style.height = `${window.innerHeight - 40}px`;
                     element.style.left = '20px';
                     element.style.top = '20px';
-                    maximizeBtn.textContent = '▢';
+                    maximizeBtn.innerHTML = svgs.restore;
+                    maximizeBtn.title = "还原";
                     windowInstance.isMaximized = true;
                 }
             });
@@ -437,7 +458,8 @@ class RainbowWindowManager {
                     windowInstance.isMinimized = true;
                     windowInstance.originalSize.height = element.offsetHeight;
                     element.classList.add('minimized');
-                    minimizeBtn.textContent = '+';
+                    minimizeBtn.innerHTML = svgs.minimized;
+                    minimizeBtn.title = "恢复";
                 }
             });
         }
@@ -586,14 +608,16 @@ class RainbowWindowManager {
      * @param {Object} windowInstance - 窗口实例
      */
     restoreWindow(windowInstance) {
-        const { element } = windowInstance;
+        const { element, svgs } = windowInstance;
         const minimizeBtn = element.querySelector('.window-btn.minimize');
+        const maximizeBtn = element.querySelector('.window-btn.maximize');
         
         windowInstance.isMinimized = false;
         element.classList.remove('minimized');
         element.style.height = `${windowInstance.originalSize.height}px`;
         if (minimizeBtn) {
-            minimizeBtn.textContent = '-';
+            minimizeBtn.innerHTML = svgs.minimize;
+            minimizeBtn.title = "最小化";
         }
     }
 
