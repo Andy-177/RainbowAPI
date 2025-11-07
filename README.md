@@ -1,6 +1,8 @@
 # RainbowAPI🌈
 
-RainbowAPI 是一个轻量级的 JavaScript 窗口管理库，提供可拖拽、可调整大小的窗口系统，支持窗口主题定制和标题颜色独立控制。完全不依赖任何第三方库，纯原生 JavaScript 实现。
+RainbowAPI 是一个轻量级的 JavaScript 窗口管理库，提供可拖拽、可调整大小的窗口系统，支持窗口主题定制和标题颜色独立控制。
+
+RainbowAPI现已独立于winbox，winbox已废弃
 
 ## 特性
 
